@@ -19,8 +19,9 @@ import numpy as np
 import random
 import sys
 import io
+from matplotlib import pyplot as plt
 
-path = 'tensor.txt'
+path = 'C:\\Users\\tb144037\\Downloads\\tensor.txt'
 with io.open(path, encoding='utf-8') as f:
     text = f.read().lower()
 print('corpus length:', len(text))
@@ -55,7 +56,7 @@ model = Sequential()
 model.add(LSTM(128, input_shape=(maxlen, len(chars))))
 model.add(Dense(len(chars), activation='softmax'))
 
-optimizer = RMSprop(lr=0.01)
+optimizer = RMSprop(learning_rate=0.01)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
 
@@ -101,7 +102,20 @@ def on_epoch_end(epoch, _):
 
 print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
 
-model.fit(x, y,
+history = model.fit(x, y,
           batch_size=128,
           epochs=100,
           callbacks=[print_callback])
+
+# model_json = model.to_json()
+# with open("model.json", "w") as json_file:
+#     json_file.write(model_json)
+
+model.save("model.h5")
+
+plt.plot(history.history['loss'])
+plt.title('model loss')
+plt.ylabel('loss')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+plt.show()
