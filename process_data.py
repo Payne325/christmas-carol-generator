@@ -20,11 +20,11 @@ for filename in os.listdir(indir):
 
     fileContents = fileContents.replace("repeat chorus", "")
 
-    fileContents = fileContents.replace("\n\n\n", "\n\n")
-    fileContents = fileContents.replace("\n\n\n", "\n\n")
-    fileContents = fileContents.replace("\n\n", "\n")
-    fileContents = fileContents.replace("\n\n", "\n")
-    
+    fileContents = fileContents.replace("\n\n\n", "\n")
+
+    for i in range(10):
+        fileContents = fileContents.replace("\n\n", "\n")
+
     fileContents = fileContents.replace("â€™", "'")
     fileContents = fileContents.replace("â€˜", "'")
 
@@ -41,3 +41,4 @@ with open("tensor.txt", "w+") as outstream:
     for filename in os.listdir(outdir):
         with open(outdir + filename) as file:
             outstream.write(file.read())
+            outstream.write("\n")
