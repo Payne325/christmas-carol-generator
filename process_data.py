@@ -25,6 +25,9 @@ for filename in os.listdir(indir):
     for i in range(10):
         fileContents = fileContents.replace("\n\n", "\n")
 
+        if fileContents[-1] == "\n":
+            fileContents = fileContents[:-1]
+
     fileContents = fileContents.replace("â€™", "'")
     fileContents = fileContents.replace("â€˜", "'")
 
