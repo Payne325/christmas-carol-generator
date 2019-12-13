@@ -21,7 +21,7 @@ import sys
 import io
 from matplotlib import pyplot as plt
 
-path = 'C:\\Users\\tb144037\\Downloads\\tensor.txt'
+path = 'tensor.txt'
 with io.open(path, encoding='utf-8') as f:
     text = f.read().lower()
 print('corpus length:', len(text))
@@ -53,10 +53,10 @@ for i, sentence in enumerate(sentences):
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars))))
+model.add(LSTM(512, input_shape=(maxlen, len(chars))))
 model.add(Dense(len(chars), activation='softmax'))
 
-optimizer = RMSprop(learning_rate=0.01)
+optimizer = RMSprop(lr=0.01)
 model.compile(loss='categorical_crossentropy', optimizer=optimizer)
 
 
@@ -83,21 +83,23 @@ def on_epoch_end(epoch, _):
         sentence = text[start_index: start_index + maxlen]
         generated += sentence
         print('----- Generating with seed: "' + sentence + '"')
-        sys.stdout.write(generated)
+        #sys.stdout.write(generated)
 
-        for i in range(400): # length of carol chars
-            x_pred = np.zeros((1, maxlen, len(chars)))
-            for t, char in enumerate(sentence):
-                x_pred[0, t, char_indices[char]] = 1.
+        if epoch >= 99:
+            for i in range(400): # length of carol chars
 
-            preds = model.predict(x_pred, verbose=0)[0]
-            next_index = sample(preds, diversity)
-            next_char = indices_char[next_index]
+                x_pred = np.zeros((1, maxlen, len(chars)))
+                for t, char in enumerate(sentence):
+                    x_pred[0, t, char_indices[char]] = 1.
 
-            sentence = sentence[1:] + next_char
+                preds = model.predict(x_pred, verbose=0)[0]
+                next_index = sample(preds, diversity)
+                next_char = indices_char[next_index]
 
-            sys.stdout.write(next_char)
-            sys.stdout.flush()
+                sentence = sentence[1:] + next_char
+
+                sys.stdout.write(next_char)
+                sys.stdout.flush()
         print()
 
 print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
