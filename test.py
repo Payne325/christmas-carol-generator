@@ -21,7 +21,7 @@ import sys
 import io
 from matplotlib import pyplot as plt
 
-path = 'C:\\Users\\tb144037\\Downloads\\tensor.txt'
+path = 'tensor.txt'
 with io.open(path, encoding='utf-8') as f:
     text = f.read().lower()
 print('corpus length:', len(text))
@@ -53,7 +53,7 @@ for i, sentence in enumerate(sentences):
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(128, input_shape=(maxlen, len(chars))))
+model.add(LSTM(256, input_shape=(maxlen, len(chars))))
 model.add(Dense(len(chars), activation='softmax'))
 
 optimizer = RMSprop(learning_rate=0.01)
