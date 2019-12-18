@@ -13,7 +13,10 @@ def sample(preds, temperature=1.0):
     probas = np.random.multinomial(1, preds, 1)
     return np.argmax(probas)
 
-path = 'C:\\Users\\tb144037\\Downloads\\tensor.txt'
+
+model_path = sys.argv[1]
+
+path = 'tensor.txt'
 with io.open(path, encoding='utf-8') as f:
     text = f.read().lower()
 print('corpus length:', len(text))
@@ -24,7 +27,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 15
+maxlen = 50
 step = 1
 sentences = []
 next_chars = []
@@ -41,7 +44,7 @@ for i, sentence in enumerate(sentences):
         x[i, t, char_indices[char]] = 1
     y[i, char_indices[next_chars[i]]] = 1
 
-model = load_model("model.h5")
+model = load_model(model_path)
 start_index = random.randint(0, len(text) - maxlen - 1)
 for diversity in [0.2, 0.5, 1.0, 1.2]: # How random are the letters
     print('----- diversity:', diversity)

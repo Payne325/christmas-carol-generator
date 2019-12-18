@@ -10,6 +10,8 @@ has at least ~100k characters. ~1M is better.
 
 from __future__ import print_function
 from keras.callbacks import LambdaCallback
+from keras.callbacks import EarlyStopping
+from keras.callbacks import ModelCheckpoint
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.layers import LSTM
@@ -32,7 +34,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 15
+maxlen = 50
 step = 1
 sentences = []
 next_chars = []
@@ -53,11 +55,11 @@ for i, sentence in enumerate(sentences):
 # build the model: a single LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(512, input_shape=(maxlen, len(chars))))
+model.add(LSTM(128, input_shape=(maxlen, len(chars))))
 model.add(Dense(len(chars), activation='softmax'))
 
 optimizer = RMSprop(lr=0.01)
-model.compile(loss='categorical_crossentropy', optimizer=optimizer)
+model.compile(loss='categorical_crossentropy', optimizer=optimizer, metrics=['accuracy'])
 
 
 def sample(preds, temperature=1.0):
@@ -75,8 +77,11 @@ def on_epoch_end(epoch, _):
     print()
     print('----- Generating text after Epoch: %d' % epoch)
 
+    with open("epochs_run.txt", 'w') as f:
+        f.write(str(epoch))
+
     start_index = random.randint(0, len(text) - maxlen - 1)
-    for diversity in [0.2, 0.5, 1.0, 1.2]: # How random are the letters
+    for diversity in [0.2, 0.5, 1.0, 1.2, 1.5]: # How random are the letters
         print('----- diversity:', diversity)
 
         generated = ''
@@ -85,7 +90,7 @@ def on_epoch_end(epoch, _):
         print('----- Generating with seed: "' + sentence + '"')
         #sys.stdout.write(generated)
 
-        if epoch >= 99:
+        if epoch >= 20:
             for i in range(400): # length of carol chars
 
                 x_pred = np.zeros((1, maxlen, len(chars)))
@@ -104,10 +109,14 @@ def on_epoch_end(epoch, _):
 
 print_callback = LambdaCallback(on_epoch_end=on_epoch_end)
 
+earlystop_callback = EarlyStopping(monitor='loss', mode='min', verbose=1, patience=5, restore_best_weights=True)
+
+checkpoint_callback = ModelCheckpoint('best_model.h5', monitor='loss', mode='min', verbose=1, save_best_only=True)
+
 history = model.fit(x, y,
           batch_size=128,
           epochs=100,
-          callbacks=[print_callback])
+          callbacks=[print_callback, earlystop_callback, checkpoint_callback])
 
 # model_json = model.to_json()
 # with open("model.json", "w") as json_file:
@@ -116,8 +125,9 @@ history = model.fit(x, y,
 model.save("model.h5")
 
 plt.plot(history.history['loss'])
-plt.title('model loss')
-plt.ylabel('loss')
+plt.plot(history.history['accuracy'])
+plt.title('model acc and loss')
+plt.ylabel('acc and loss')
 plt.xlabel('epoch')
-plt.legend(['train', 'val'], loc='upper left')
+plt.legend(['loss', 'acc'], loc='upper left')
 plt.show()
